@@ -1,0 +1,71 @@
+﻿@page "/usuarios/create"
+@using Microsoft.EntityFrameworkCore
+@using FinanceWeb.Models
+@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Novo Usuário</PageTitle>
+
+<h2>Novo Usuario</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Usuario" OnValidSubmit="AddUsuario" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome:</label> 
+                <InputText id="nome" @bind-Value="Usuario.Nome" class="form-control" /> 
+                <ValidationMessage For="() => Usuario.Nome" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label> 
+                <InputText id="email" @bind-Value="Usuario.Email" class="form-control" /> 
+                <ValidationMessage For="() => Usuario.Email" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="senhahash" class="form-label">Senha:</label> 
+                <InputText id="senha" @bind-Value="Usuario.Senha" type="password" class="form-control" />
+                <ValidationMessage For="() => Usuario.Senha" class="text-danger" />
+                @if (showPasswordError)
+                {
+                    <div class="text-danger">A senha é obrigatória.</div>
+                }
+            </div>        
+            <button type="submit" class="btn btn-primary">Cadastrar</button> | 
+            <a href="/usuarios" class="btn btn-outline-secondary">Retornar para lista</a>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Usuario Usuario { get; set; } = new();
+    private bool showPasswordError = false;
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddUsuario()
+    {
+        showPasswordError = false;
+
+        if (string.IsNullOrWhiteSpace(Usuario.Senha))
+        {
+            showPasswordError = true;
+            return;
+        }
+
+        using var context = DbFactory.CreateDbContext();
+
+        // Hash the password before saving
+        Usuario.SenhaHash = HashSenha(Usuario.Senha);
+
+        context.Usuarios.Add(Usuario);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/usuarios");
+    }
+
+    private string HashSenha(string senha)
+    {
+        return BCrypt.Net.BCrypt.HashPassword(senha);
+    }
+}

@@ -1,0 +1,112 @@
+﻿@page "/contas/edit"
+@using FinanceWeb.Enums
+@using Microsoft.EntityFrameworkCore
+@using FinanceWeb.Models
+@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edição Contas</PageTitle>
+
+<h2>Edição Contas</h2>
+<hr />
+@if (Conta is null)
+{
+    <p><em>Carregando...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Conta" OnValidSubmit="UpdateConta" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Conta.Id" value="@Conta.Id" />
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descricao:</label>
+                    <InputText id="descricao" @bind-Value="Conta.Descricao" class="form-control" />
+                    <ValidationMessage For="() => Conta.Descricao" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="valor" class="form-label">Valor:</label>
+                    <InputNumber id="valor" @bind-Value="Conta.Valor" class="form-control" />
+                    <ValidationMessage For="() => Conta.Valor" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="datavencimento" class="form-label">Data de Vencimento:</label>
+                    <InputDate id="datavencimento" @bind-Value="Conta.DataVencimento" class="form-control" />
+                    <ValidationMessage For="() => Conta.DataVencimento" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="pago" class="form-label">Pago:</label>
+                    <InputCheckbox id="pago" @bind-Value="Conta.Pago" class="form-check-input" />
+                    <ValidationMessage For="() => Conta.Pago" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="tipo" class="form-label">Tipo:</label>
+                    <InputSelect id="tipo" @bind-Value="Conta.Tipo" class="form-control">
+                        <option value="">Selecione um Tipo</option>
+                        @foreach (var tipo in Enum.GetValues(typeof(TipoConta)))
+                        {
+                            <option value="@tipo">@tipo</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Conta.Tipo" class="text-danger" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Salvar</button> |
+                <a href="/contas" class="btn btn-outline-secondary">Retornar para lista</a>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Conta? Conta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Conta ??= await context.Contas.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Conta is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateConta()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Conta!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ContaExists(Conta!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/contas");
+    }
+
+    private bool ContaExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Contas.Any(e => e.Id == id);
+    }
+}

@@ -1,0 +1,38 @@
+﻿@page "/usuarios"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FinanceWeb.Models
+@using FinanceWeb.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+
+<PageTitle>Lista Usuários</PageTitle>
+
+<h1>Cadastro de Usuários</h1>
+
+<p>
+    <a href="usuarios/create" class="btn btn-primary">Novo Usuário</a>
+</p>
+
+<QuickGrid Class="table table-striped" Items="context.Usuarios">
+    <PropertyColumn Property="usuario => usuario.Id" />
+    <PropertyColumn Property="usuario => usuario.Nome" />
+    <PropertyColumn Property="usuario => usuario.Email" />
+
+    <TemplateColumn Context="usuario">
+        <a href="@($"usuarios/edit?id={usuario.Id}")" class="btn btn-info">Editar</a> |
+        <a href="@($"usuarios/details?id={usuario.Id}")" class="btn btn-success">Detalhes</a> |
+        <a href="@($"usuarios/delete?id={usuario.Id}")" class="btn btn-danger">Deletar</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private FinanceWebContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

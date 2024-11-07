@@ -1,0 +1,52 @@
+﻿@page "/contas/details"
+@using Microsoft.EntityFrameworkCore
+@using FinanceWeb.Models
+@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Detalhes Conta</PageTitle>
+
+<div>
+    <h2>Detalhes Conta</h2>
+    <hr />
+    @if (conta is null)
+    {
+        <p><em>Carregando...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Descricao</dt>
+            <dd class="col-sm-10">@conta.Descricao</dd>
+            <dt class="col-sm-2">Valor</dt>
+            <dd class="col-sm-10">@conta.ValorFormatado</dd>
+            <dt class="col-sm-2">DataVencimento</dt>
+            <dd class="col-sm-10">@conta.DataVencimentoFormatado</dd>
+            <dt class="col-sm-2">Pago</dt>
+            <dd class="col-sm-10">@conta.Pago</dd>
+            <dt class="col-sm-2">Tipo</dt>
+            <dd class="col-sm-10">@conta.Tipo</dd>
+        </dl>
+        <div>
+            <a href="@($"/contas/edit?id={conta.Id}")" class="btn btn-info">Editar</a> |
+            <a href="@($"/contas")" class="btn btn-outline-secondary">Retornar para lista</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Conta? conta;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        conta = await context.Contas.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (conta is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
