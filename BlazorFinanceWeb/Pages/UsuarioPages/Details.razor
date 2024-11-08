@@ -1,8 +1,10 @@
 ﻿@page "/usuarios/details"
+@using FinanceWeb.Services
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject IUsuarioService UsuarioService
 
 <PageTitle>Detalhes Usuário</PageTitle>
 
@@ -35,8 +37,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        usuario = await context.Usuarios.FirstOrDefaultAsync(m => m.Id == Id);
+        usuario = await UsuarioService.ObterUsuarioPorIdAsync(Id);
 
         if (usuario is null)
         {

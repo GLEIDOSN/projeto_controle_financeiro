@@ -1,6 +1,8 @@
 ﻿@page "/usuarios/create"
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
+@inject IUsuarioService UsuarioService
 @inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
 @inject NavigationManager NavigationManager
 
@@ -43,7 +45,6 @@
     private Usuario Usuario { get; set; } = new();
     private bool showPasswordError = false;
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddUsuario()
     {
         showPasswordError = false;
@@ -54,14 +55,17 @@
             return;
         }
 
-        using var context = DbFactory.CreateDbContext();
-
-        // Hash the password before saving
-        Usuario.SenhaHash = HashSenha(Usuario.Senha);
-
-        context.Usuarios.Add(Usuario);
-        await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/usuarios");
+        try
+        {
+            // Adiciona o usuário usando o serviço de usuário
+            await UsuarioService.AdicionarUsuarioAsync(Usuario);
+            NavigationManager.NavigateTo("/usuarios");
+        }
+        catch (Exception ex)
+        {
+            // Lide com erros de maneira apropriada (exibir mensagens, log, etc.)
+            Console.WriteLine($"Erro ao adicionar usuário: {ex.Message}");
+        }
     }
 
     private string HashSenha(string senha)

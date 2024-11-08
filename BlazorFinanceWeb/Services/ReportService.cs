@@ -1,6 +1,7 @@
 ﻿using FinanceWeb.Data;
 using FinanceWeb.Enums;
 using FinanceWeb.Models;
+using FinanceWeb.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -8,7 +9,7 @@ using QuestPDF.Infrastructure;
 
 namespace FinanceWeb.Services;
 
-public class ReportService
+public class ReportService : IReportService
 {
     private readonly FinanceWebContext _context;
 
@@ -47,7 +48,7 @@ public class ReportService
         return stream.ToArray();
     }
 
-    private async Task<List<Conta>> ObterContasFiltradasAsync(DateTime? dataInicio, DateTime? dataFim, string tipoConta, string statusConta)
+    public async Task<List<Conta>> ObterContasFiltradasAsync(DateTime? dataInicio, DateTime? dataFim, string tipoConta, string statusConta)
     {
         var query = _context.Contas.AsQueryable();
 

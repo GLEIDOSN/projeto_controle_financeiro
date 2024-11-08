@@ -1,7 +1,8 @@
 ﻿@page "/usuarios/delete"
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject IUsuarioService UsuarioService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Deletar Usuário</PageTitle>
@@ -37,8 +38,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        usuario = await context.Usuarios.FirstOrDefaultAsync(m => m.Id == Id);
+        usuario = await UsuarioService. ObterUsuarioPorIdAsync(Id);
 
         if (usuario is null)
         {
@@ -48,9 +48,10 @@
 
     private async Task DeleteUsuario()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Usuarios.Remove(usuario!);
-        await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/usuarios");
+        if (usuario != null)
+        {
+            await UsuarioService.RemoverUsuarioAsync(usuario.Id);
+            NavigationManager.NavigateTo("/usuarios");
+        }
     }
 }

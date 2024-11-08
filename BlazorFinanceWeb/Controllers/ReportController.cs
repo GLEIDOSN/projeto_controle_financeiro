@@ -1,4 +1,5 @@
 ﻿using FinanceWeb.Services;
+using FinanceWeb.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceWeb.Controllers;
@@ -7,9 +8,9 @@ namespace FinanceWeb.Controllers;
 [Route("api/report")]
 public class ReportController : Controller
 {
-    private readonly ReportService _reportService;
+    private readonly IReportService _reportService;
 
-    public ReportController(ReportService reportService)
+    public ReportController(IReportService reportService)
     {
         _reportService = reportService;
     }

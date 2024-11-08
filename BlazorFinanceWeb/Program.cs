@@ -1,5 +1,7 @@
 using FinanceWeb.Data;
 using FinanceWeb.Services;
+using FinanceWeb.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 
@@ -16,12 +18,24 @@ internal class Program
             options.UseSqlite(builder.Configuration.GetConnectionString("FinanceWebContext") ?? throw new InvalidOperationException("Connection string 'FinanceWebContext' not found.")));
 
         builder.Services.AddControllers();
-        builder.Services.AddScoped<ReportService>();
+        builder.Services.AddScoped<IReportService, ReportService>();
+        builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
         // Add services to the container.
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
         builder.Services.AddQuickGridEntityFrameworkAdapter();
+
+        builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.Cookie.Name = "auth_token";
+                options.LoginPath = "/login";
+                options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
+                options.AccessDeniedPath = "/access-denied";
+            });
+        builder.Services.AddAuthorization();
+        builder.Services.AddCascadingAuthenticationState();
 
         var app = builder.Build();
 
@@ -39,6 +53,8 @@ internal class Program
 
         app.UseRouting();
         app.MapControllers();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.MapBlazorHub();
         app.MapFallbackToPage("/_Host");

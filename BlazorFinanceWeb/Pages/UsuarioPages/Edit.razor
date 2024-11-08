@@ -1,6 +1,8 @@
 ﻿@page "/usuarios/edit"
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
+@inject IUsuarioService UsuarioService
 @inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
 @inject NavigationManager NavigationManager
 
@@ -47,14 +49,11 @@ else
 
     [SupplyParameterFromForm]
     private Usuario? Usuario { get; set; }
-
-    // Campo para armazenar a nova senha
     private string? NovaSenha { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Usuario ??= await context.Usuarios.FirstOrDefaultAsync(m => m.Id == Id);
+        Usuario = await UsuarioService.ObterUsuarioPorIdAsync(Id);
 
         if (Usuario is null)
         {
@@ -62,47 +61,23 @@ else
         }
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateUsuario()
     {
-        using var context = DbFactory.CreateDbContext();
-        var usuarioDb = await context.Usuarios.FindAsync(Usuario!.Id);
-
-        if (usuarioDb != null)
+        try
         {
-            // Atualizar os campos modificáveis
-            usuarioDb.Nome = Usuario.Nome;
-            usuarioDb.Email = Usuario.Email;
-
-            // Se uma nova senha foi fornecida, criptografe-a e atualize o SenhaHash
-            if (!string.IsNullOrEmpty(NovaSenha))
+            await UsuarioService.AtualizarUsuarioAsync(Usuario!, NovaSenha);
+            NavigationManager.NavigateTo("/usuarios");
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await UsuarioService.ExisteUsuarioAsync(Usuario!.Id))
             {
-                usuarioDb.SenhaHash = BCrypt.Net.BCrypt.HashPassword(NovaSenha);
+                NavigationManager.NavigateTo("notfound");
             }
-
-            try
+            else
             {
-                await context.SaveChangesAsync();
-                NavigationManager.NavigateTo("/usuarios");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UsuarioExists(Usuario!.Id))
-                {
-                    NavigationManager.NavigateTo("notfound");
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
         }
-    }
-
-    private bool UsuarioExists(int id)
-    {
-        using var context = DbFactory.CreateDbContext();
-        return context.Usuarios.Any(e => e.Id == id);
     }
 }
