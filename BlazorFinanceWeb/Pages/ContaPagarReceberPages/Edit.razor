@@ -3,8 +3,8 @@
 @using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IContaService ContaService
-@inject NavigationManager NavigationManager
+@inject IContaService contaService
+@inject NavigationManager navigationManager
 
 <PageTitle>Edição Contas</PageTitle>
 
@@ -70,11 +70,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Conta ??= await ContaService.GetContaByIdAsync(Id);
+        Conta ??= await contaService.GetContaByIdAsync(Id);
 
         if (Conta is null)
         {
-            NavigationManager.NavigateTo("notfound");
+            navigationManager.NavigateTo("notfound");
         }
     }
 
@@ -82,13 +82,13 @@ else
     {
         try
         {
-            await ContaService.UpdateContaAsync(Conta!);
+            await contaService.UpdateContaAsync(Conta!);
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (await ContaService.ContaExistsAsync(Conta!.Id))
+            if (await contaService.ContaExistsAsync(Conta!.Id))
             {
-                NavigationManager.NavigateTo("notfound");
+                navigationManager.NavigateTo("notfound");
             }
             else
             {
@@ -96,6 +96,6 @@ else
             }
         }
 
-        NavigationManager.NavigateTo("/contas");
+        navigationManager.NavigateTo("/contas");
     }
 }

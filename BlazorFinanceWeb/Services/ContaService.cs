@@ -1,4 +1,5 @@
 ﻿using FinanceWeb.Data;
+using FinanceWeb.Enums;
 using FinanceWeb.Models;
 using FinanceWeb.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,38 @@ public class ContaService : IContaService
             _context.Contas.Remove(conta);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<List<Conta>> ObterContasAsync(DateTime? dataInicio, DateTime? dataFim, string statusConta, TipoConta? tipoContaFiltro)
+    {
+        var query = _context.Set<Conta>().AsQueryable();
+
+        if (dataInicio.HasValue)
+        {
+            query = query.Where(c => c.DataVencimento >= dataInicio.Value);
+        }
+
+        if (dataFim.HasValue)
+        {
+            query = query.Where(c => c.DataVencimento <= dataFim.Value);
+        }
+
+        if (!string.IsNullOrEmpty(statusConta) && statusConta != "Todos")
+        {
+            query = statusConta switch
+            {
+                "Pendente" => query.Where(c => !c.Pago),
+                "Pago" => query.Where(c => c.Pago),
+                _ => query
+            };
+        }
+
+        if (tipoContaFiltro.HasValue)
+        {
+            query = query.Where(c => c.Tipo == tipoContaFiltro);
+        }
+
+        return await query.ToListAsync();
     }
 
     public async Task<bool> ContaExistsAsync(int id)

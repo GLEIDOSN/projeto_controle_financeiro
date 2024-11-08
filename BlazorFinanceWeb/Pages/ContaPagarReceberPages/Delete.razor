@@ -2,8 +2,8 @@
 @using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IContaService ContaService
-@inject NavigationManager NavigationManager
+@inject IContaService contaService
+@inject NavigationManager navigationManager
 
 <PageTitle>Deletar Contas</PageTitle>
 
@@ -50,16 +50,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        conta = await ContaService.GetContaByIdAsync(Id);
+        conta = await contaService.GetContaByIdAsync(Id);
         if (conta == null)
         {
-            NavigationManager.NavigateTo("notfound");
+            navigationManager.NavigateTo("notfound");
         }
     }
 
     private async Task DeleteConta()
     {
-        await ContaService.DeleteContaAsync(Id);
-        NavigationManager.NavigateTo("/contas");
+        await contaService.DeleteContaAsync(Id);
+        navigationManager.NavigateTo("/contas");
     }
 }

@@ -4,7 +4,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using FinanceWeb.Models
 @using FinanceWeb.Data
-@inject IContaService ContaService
+@inject IContaService contaService
 
 <PageTitle>Lista Contas</PageTitle>
 
@@ -39,6 +39,6 @@ else
 
     protected override async void OnInitialized()
     {
-        Contas = await ContaService.GetAllContasAsync();
+        Contas = await contaService.GetAllContasAsync();
     }
 }

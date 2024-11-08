@@ -3,6 +3,7 @@ using System;
 using FinanceWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceWeb.Migrations
 {
     [DbContext(typeof(FinanceWebContext))]
-    partial class FinanceWebContextModelSnapshot : ModelSnapshot
+    [Migration("20241108152532_InclusaoCamposUsuarios")]
+    partial class InclusaoCamposUsuarios
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");

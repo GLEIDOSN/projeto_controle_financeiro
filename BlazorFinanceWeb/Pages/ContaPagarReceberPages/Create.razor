@@ -3,8 +3,8 @@
 @using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IContaService ContaService
-@inject NavigationManager NavigationManager
+@inject IContaService contaService
+@inject NavigationManager navigationManager
 
 <PageTitle>Nova Conta</PageTitle>
 
@@ -57,7 +57,7 @@
 
     private async Task AddConta()
     {
-        await ContaService.AddContaAsync(Conta);
-        NavigationManager.NavigateTo("/contas");
+        await contaService.AddContaAsync(Conta);
+        navigationManager.NavigateTo("/contas");
     }
 }

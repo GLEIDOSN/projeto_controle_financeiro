@@ -5,7 +5,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using FinanceWeb.Models
 @using FinanceWeb.Data
-@inject IUsuarioService UsuarioService
+@inject IUsuarioService usuarioService
 
 <PageTitle>Lista Usuários</PageTitle>
 
@@ -24,6 +24,7 @@ else
     <QuickGrid Class="table table-striped" Items="Usuarios.AsQueryable()">
         <PropertyColumn Property="usuario => usuario.Id" />
         <PropertyColumn Property="usuario => usuario.Nome" />
+        <PropertyColumn Property="usuario => usuario.TipoUsuarioFormatado" Title="Tipo Usuário" />
         <PropertyColumn Property="usuario => usuario.Email" />
 
         <TemplateColumn Context="usuario">
@@ -39,6 +40,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Usuarios = await UsuarioService.GetAllUsuariosAsync();
+        Usuarios = await usuarioService.GetAllUsuariosAsync();
     }
 }

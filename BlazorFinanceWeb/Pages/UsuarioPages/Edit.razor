@@ -1,10 +1,10 @@
 ﻿@page "/usuarios/edit"
+@using FinanceWeb.Enums
 @using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IUsuarioService UsuarioService
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
-@inject NavigationManager NavigationManager
+@inject IUsuarioService usuarioService
+@inject NavigationManager navigationManager
 
 <PageTitle>Edição Usuário</PageTitle>
 
@@ -26,6 +26,17 @@ else
                     <label for="nome" class="form-label">Nome:</label>
                     <InputText id="nome" @bind-Value="Usuario.Nome" class="form-control" />
                     <ValidationMessage For="() => Usuario.Nome" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="tipo" class="form-label">Tipo Usuário:</label>
+                    <InputSelect id="tipo" @bind-Value="Usuario.TipoUsuario" class="form-control">
+                        <option value="">Selecione um Tipo</option>
+                        @foreach (var tipo in Enum.GetValues(typeof(TipoUsuario)))
+                        {
+                            <option value="@tipo">@tipo</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Usuario.TipoUsuario" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Email:</label>
@@ -53,11 +64,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Usuario = await UsuarioService.GetUsuarioByIdAsync(Id);
+        Usuario = await usuarioService.GetUsuarioByIdAsync(Id);
 
         if (Usuario is null)
         {
-            NavigationManager.NavigateTo("notfound");
+            navigationManager.NavigateTo("notfound");
         }
     }
 
@@ -65,14 +76,14 @@ else
     {
         try
         {
-            await UsuarioService.AtualizarUsuarioAsync(Usuario!, NovaSenha);
-            NavigationManager.NavigateTo("/usuarios");
+            await usuarioService.AtualizarUsuarioAsync(Usuario!, NovaSenha);
+            navigationManager.NavigateTo("/usuarios");
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!await UsuarioService.ExisteUsuarioAsync(Usuario!.Id))
+            if (!await usuarioService.ExisteUsuarioAsync(Usuario!.Id))
             {
-                NavigationManager.NavigateTo("notfound");
+                navigationManager.NavigateTo("notfound");
             }
             else
             {

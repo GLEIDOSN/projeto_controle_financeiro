@@ -3,8 +3,8 @@
 @using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject NavigationManager NavigationManager
-@inject IUsuarioService UsuarioService
+@inject NavigationManager navigationManager
+@inject IUsuarioService usuarioService
 
 <PageTitle>Detalhes Usuário</PageTitle>
 
@@ -19,6 +19,8 @@
         <dl class="row">
             <dt class="col-sm-2">Nome</dt>
             <dd class="col-sm-10">@usuario.Nome</dd>
+            <dt class="col-sm-2">Tipo Usuário</dt>
+            <dd class="col-sm-10">@usuario.TipoUsuarioFormatado</dd>
             <dt class="col-sm-2">Email</dt>
             <dd class="col-sm-10">@usuario.Email</dd>
         </dl>
@@ -37,11 +39,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        usuario = await UsuarioService.GetUsuarioByIdAsync(Id);
+        usuario = await usuarioService.GetUsuarioByIdAsync(Id);
 
         if (usuario is null)
         {
-            NavigationManager.NavigateTo("notfound");
+            navigationManager.NavigateTo("notfound");
         }
     }
 }

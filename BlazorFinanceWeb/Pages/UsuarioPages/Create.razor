@@ -1,10 +1,10 @@
 ﻿@page "/usuarios/create"
+@using FinanceWeb.Enums
 @using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IUsuarioService UsuarioService
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
-@inject NavigationManager NavigationManager
+@inject IUsuarioService usuarioService
+@inject NavigationManager navigationManager
 
 <PageTitle>Novo Usuário</PageTitle>
 
@@ -19,7 +19,18 @@
                 <label for="nome" class="form-label">Nome:</label> 
                 <InputText id="nome" @bind-Value="Usuario.Nome" class="form-control" /> 
                 <ValidationMessage For="() => Usuario.Nome" class="text-danger" /> 
-            </div>        
+            </div>
+            <div class="mb-3">
+                <label for="tipo" class="form-label">Tipo Usuário:</label>
+                <InputSelect id="tipo" @bind-Value="Usuario.TipoUsuario" class="form-control">
+                    <option value="">Selecione um Tipo</option>
+                    @foreach (var tipo in Enum.GetValues(typeof(TipoUsuario)))
+                    {
+                        <option value="@tipo">@tipo</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Usuario.TipoUsuario" class="text-danger" />
+            </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Email:</label> 
                 <InputText id="email" @bind-Value="Usuario.Email" class="form-control" /> 
@@ -58,8 +69,8 @@
         try
         {
             // Adiciona o usuário usando o serviço de usuário
-            await UsuarioService.AddUsuarioAsync(Usuario);
-            NavigationManager.NavigateTo("/usuarios");
+            await usuarioService.AddUsuarioAsync(Usuario);
+            navigationManager.NavigateTo("/usuarios");
         }
         catch (Exception ex)
         {

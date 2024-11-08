@@ -1,10 +1,11 @@
 ﻿@page "/relatorioConta"
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
-@inject IJSRuntime JS
 @using FinanceWeb.Enums
 @using FinanceWeb.Models
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using System.Globalization
+@inject IJSRuntime js
+@inject IContaService contaService
 
 <h1>Relatório de Contas a Pagar/Receber</h1>
 
@@ -56,7 +57,7 @@
         </tr>
     </thead>
     <tbody>
-        @if (contasPagar == null || !contasPagar.Any())
+        @if (ContasPagar == null || !ContasPagar.Any())
         {
             <tr>
                 <td colspan="5">Nenhuma conta a pagar encontrada.</td>
@@ -64,7 +65,7 @@
         }
         else
         {
-            foreach (var conta in contasPagar)
+            foreach (var conta in ContasPagar)
             {
                 <tr>
                     <td>@conta.Id</td>
@@ -78,7 +79,7 @@
 
             <tr>
                 <td colspan="3"><strong>Total</strong></td>
-                <td><strong>@contasPagar.Sum(c => c.Valor).ToString("C2", CultureInfo.CurrentCulture)</strong></td>
+                <td><strong>@ContasPagar.Sum(c => c.Valor).ToString("C2", CultureInfo.CurrentCulture)</strong></td>
                 <td colspan="3"></td>
             </tr>
         }
@@ -86,7 +87,7 @@
 </table>
 
 @code {
-    private List<Conta> contasPagar = new();
+    private List<Conta> ContasPagar = new();
     private DateTime? DataInicio { get; set; }
     private DateTime? DataFim { get; set; }
     private TipoConta? TipoContaFiltro { get; set; } = null;
@@ -103,31 +104,7 @@
 
     private async Task LoadData()
     {
-        using var context = await DbFactory.CreateDbContextAsync();
-        var query = context.Contas.AsQueryable();
-
-        if (DataInicio.HasValue)
-        {
-            query = query.Where(c => c.DataVencimento >= DataInicio.Value);
-        }
-
-        if (DataFim.HasValue)
-        {
-            query = query.Where(c => c.DataVencimento <= DataFim.Value);
-        }
-
-        switch (StatusConta)
-        {
-            case "Pendente": query = query.Where(c => c.Pago == false); break;
-            case "Pago": query = query.Where(c => c.Pago == true); break;
-        }
-
-        if (TipoContaFiltro is not null)
-        {
-            query = query.Where(c => c.Tipo == TipoContaFiltro);
-        }
-
-        contasPagar = await query.ToListAsync();
+        ContasPagar = await contaService.ObterContasAsync(DataInicio, DataFim, StatusConta, TipoContaFiltro);
     }
 
     private async Task Filtrar()
@@ -136,7 +113,7 @@
         if (!DataInicio.HasValue || !DataFim.HasValue)
         {
             // Exibir uma mensagem de erro
-            await JS.InvokeVoidAsync("alert", "Por favor, preencha as datas de início e fim.");
+            await js.InvokeVoidAsync("alert", "Por favor, preencha as datas de início e fim.");
             return;
         }
         await LoadData();
@@ -146,6 +123,6 @@
     {
         // Implementar lógica para gerar o PDF
         // Você pode chamar um método de um serviço que cria o PDF a partir da lista de contas
-        await JS.InvokeVoidAsync("downloadPdf");
+        await js.InvokeVoidAsync("downloadPdf");
     }
 }
