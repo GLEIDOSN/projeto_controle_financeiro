@@ -20,6 +20,7 @@ internal class Program
         builder.Services.AddControllers();
         builder.Services.AddScoped<IReportService, ReportService>();
         builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+        builder.Services.AddScoped<IContaService, ContaService>();
 
         // Add services to the container.
         builder.Services.AddRazorPages();

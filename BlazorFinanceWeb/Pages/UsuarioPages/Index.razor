@@ -39,6 +39,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Usuarios = await UsuarioService.ObterTodosAsync();
+        Usuarios = await UsuarioService.GetAllUsuariosAsync();
     }
 }

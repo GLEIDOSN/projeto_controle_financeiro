@@ -1,7 +1,8 @@
 ﻿@page "/contas/details"
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject IContaService ContaService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Detalhes Conta</PageTitle>
@@ -41,8 +42,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        conta = await context.Contas.FirstOrDefaultAsync(m => m.Id == Id);
+        conta = await ContaService.GetContaByIdAsync(Id);
 
         if (conta is null)
         {

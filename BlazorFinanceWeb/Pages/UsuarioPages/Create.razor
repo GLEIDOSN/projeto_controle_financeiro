@@ -58,7 +58,7 @@
         try
         {
             // Adiciona o usuário usando o serviço de usuário
-            await UsuarioService.AdicionarUsuarioAsync(Usuario);
+            await UsuarioService.AddUsuarioAsync(Usuario);
             NavigationManager.NavigateTo("/usuarios");
         }
         catch (Exception ex)

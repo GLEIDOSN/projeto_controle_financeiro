@@ -1,10 +1,10 @@
 ﻿@page "/contas"
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using FinanceWeb.Models
 @using FinanceWeb.Data
-@implements IAsyncDisposable
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject IContaService ContaService
 
 <PageTitle>Lista Contas</PageTitle>
 
@@ -13,28 +13,32 @@
 <p>
     <a href="contas/create" class="btn btn-primary">Nova Conta</a>
 </p>
+@if (Contas is null)
+{
+    <p><em>Carregando...</em></p>
+}
+else
+{
+    <QuickGrid Class="table table-striped" Items="Contas.AsQueryable()">
+        <PropertyColumn Property="conta => conta.Descricao" />
+        <PropertyColumn Property="conta => conta.ValorFormatado" Title="Valor" />
+        <PropertyColumn Property="conta => conta.DataVencimentoFormatado" Title="Vencimento" />
+        <PropertyColumn Property="conta => conta.Pago" />
+        <PropertyColumn Property="conta => conta.TipoFormatado" Title="Tipo" />
 
-<QuickGrid Class="table table-striped" Items="context.Contas">
-    <PropertyColumn Property="conta => conta.Descricao" />
-    <PropertyColumn Property="conta => conta.ValorFormatado" Title="Valor" />
-    <PropertyColumn Property="conta => conta.DataVencimentoFormatado" Title="Vencimento"/>
-    <PropertyColumn Property="conta => conta.Pago" />
-    <PropertyColumn Property="conta => conta.TipoFormatado" Title="Tipo" />
-
-    <TemplateColumn Title="Ações" Context="conta">
-        <a href="@($"contas/edit?id={conta.Id}")" class="btn btn-info">Editar</a> |
-        <a href="@($"contas/details?id={conta.Id}")" class="btn btn-success">Detalhes</a> |
-        <a href="@($"contas/delete?id={conta.Id}")" class="btn btn-danger">Deletar</a>
-    </TemplateColumn>
-</QuickGrid>
+        <TemplateColumn Title="Ações" Context="conta">
+            <a href="@($"contas/edit?id={conta.Id}")" class="btn btn-info">Editar</a> |
+            <a href="@($"contas/details?id={conta.Id}")" class="btn btn-success">Detalhes</a> |
+            <a href="@($"contas/delete?id={conta.Id}")" class="btn btn-danger">Deletar</a>
+        </TemplateColumn>
+    </QuickGrid>
+}
 
 @code {
-    private FinanceWebContext context = default!;
+    private List<Conta>? Contas { get; set; }
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
-        context = DbFactory.CreateDbContext();
+        Contas = await ContaService.GetAllContasAsync();
     }
-
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }

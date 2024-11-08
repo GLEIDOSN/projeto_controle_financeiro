@@ -14,7 +14,7 @@ public class UsuarioService : IUsuarioService
         _context = context;
     }
 
-    public async Task<Usuario> AdicionarUsuarioAsync(Usuario usuario)
+    public async Task<Usuario> AddUsuarioAsync(Usuario usuario)
     {
         usuario.SenhaHash = HashPassword(usuario.Senha);
         _context.Usuarios.Add(usuario);
@@ -23,7 +23,7 @@ public class UsuarioService : IUsuarioService
         return usuario;
     }
 
-    public async Task AtualizarUsuarioAsync(Usuario usuario)
+    public async Task UpdateUsuarioAsync(Usuario usuario)
     {
         usuario.SenhaHash = HashPassword(usuario.Senha);
         _context.Usuarios.Update(usuario);
@@ -44,24 +44,19 @@ public class UsuarioService : IUsuarioService
         return null;
     }
 
-    public async Task<Usuario?> ObterUsuarioPorIdAsync(int id)
+    public async Task<Usuario?> GetUsuarioByIdAsync(int id)
     {
         return await _context.Set<Usuario>().FindAsync(id);
     }
 
-    public async Task<IEnumerable<Usuario>> ObterUsuariosAsync()
-    {
-        return await _context.Set<Usuario>().ToListAsync();
-    }
-
-    public async Task<List<Usuario>> ObterTodosAsync()
+    public async Task<List<Usuario>> GetAllUsuariosAsync()
     {
         return await _context.Usuarios.ToListAsync();
     }
 
-    public async Task RemoverUsuarioAsync(int id)
+    public async Task DeleteUsuarioAsync(int id)
     {
-        var usuario = await ObterUsuarioPorIdAsync(id);
+        var usuario = await GetUsuarioByIdAsync(id);
             
         if (usuario != null)
         {

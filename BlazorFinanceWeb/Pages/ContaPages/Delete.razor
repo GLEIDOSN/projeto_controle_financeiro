@@ -1,7 +1,8 @@
 ﻿@page "/contas/delete"
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject IContaService ContaService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Deletar Contas</PageTitle>
@@ -45,14 +46,12 @@
     private Conta? conta;
 
     [SupplyParameterFromQuery]
-    private int Id { get; set; }
+    public int Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        conta = await context.Contas.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (conta is null)
+        conta = await ContaService.GetContaByIdAsync(Id);
+        if (conta == null)
         {
             NavigationManager.NavigateTo("notfound");
         }
@@ -60,9 +59,7 @@
 
     private async Task DeleteConta()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Contas.Remove(conta!);
-        await context.SaveChangesAsync();
+        await ContaService.DeleteContaAsync(Id);
         NavigationManager.NavigateTo("/contas");
     }
 }

@@ -53,7 +53,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Usuario = await UsuarioService.ObterUsuarioPorIdAsync(Id);
+        Usuario = await UsuarioService.GetUsuarioByIdAsync(Id);
 
         if (Usuario is null)
         {

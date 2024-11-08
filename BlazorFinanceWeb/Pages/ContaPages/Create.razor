@@ -1,8 +1,9 @@
 ﻿@page "/contas/create"
 @using FinanceWeb.Enums
+@using FinanceWeb.Services.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using FinanceWeb.Models
-@inject IDbContextFactory<FinanceWeb.Data.FinanceWebContext> DbFactory
+@inject IContaService ContaService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Nova Conta</PageTitle>
@@ -52,15 +53,11 @@
 </div>
 
 @code {
-    [SupplyParameterFromForm]
     private Conta Conta { get; set; } = new();
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddConta()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Contas.Add(Conta);
-        await context.SaveChangesAsync();
+        await ContaService.AddContaAsync(Conta);
         NavigationManager.NavigateTo("/contas");
     }
 }

@@ -4,21 +4,19 @@ namespace FinanceWeb.Services.Interfaces;
 
 public interface IUsuarioService
 {
-    public Task<Usuario> AdicionarUsuarioAsync(Usuario usuario);
+    public Task<Usuario> AddUsuarioAsync(Usuario usuario);
 
-    public Task<IEnumerable<Usuario>> ObterUsuariosAsync();
+    public Task<Usuario?> GetUsuarioByIdAsync(int id);
 
-    public Task<Usuario?> ObterUsuarioPorIdAsync(int id);
-
-    public Task<List<Usuario>> ObterTodosAsync();
+    public Task<List<Usuario>> GetAllUsuariosAsync();
 
     public Task<bool> ExisteUsuarioAsync(int id);
 
-    public Task AtualizarUsuarioAsync(Usuario usuario);
+    public Task UpdateUsuarioAsync(Usuario usuario);
 
     public Task AtualizarUsuarioAsync(Usuario usuario, string? novaSenha);
 
-    public Task RemoverUsuarioAsync(int id);
+    public Task DeleteUsuarioAsync(int id);
 
     public Task<Usuario?> AutenticarAsync(string email, string senha);
 }
