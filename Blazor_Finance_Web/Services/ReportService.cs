@@ -88,7 +88,7 @@ public class ReportService : IReportService
                                         .FontSize(15)
                                         .Bold();
                                     column2.Item()
-                                        .Text($"{DateTime.Now:dd/mm/yyyy}")
+                                        .Text($"{DateTime.Now:dd/MM/yyyy}")
                                         .FontFamily("Arial")
                                         .FontSize(12);
                                 });
