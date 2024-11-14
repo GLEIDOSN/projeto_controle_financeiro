@@ -1,0 +1,94 @@
+﻿@page "/usuarios/edit"
+@using Blazor_Finance_Web.Enums
+@using Blazor_Finance_Web.Models
+@using Blazor_Finance_Web.Services.Interfaces
+@using Microsoft.EntityFrameworkCore
+@inject IUsuarioService usuarioService
+@inject NavigationManager navigationManager
+
+<PageTitle>Edição Usuário</PageTitle>
+
+<h2>Edição Usuário</h2>
+<hr />
+@if (Usuario is null)
+{
+    <p><em>Carregando...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Usuario" OnValidSubmit="UpdateUsuario" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Usuario.Id" value="@Usuario.Id" />
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome:</label>
+                    <InputText id="nome" @bind-Value="Usuario.Nome" class="form-control" />
+                    <ValidationMessage For="() => Usuario.Nome" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="tipo" class="form-label">Tipo Usuário:</label>
+                    <InputSelect id="tipo" @bind-Value="Usuario.TipoUsuario" class="form-control">
+                        <option value="">Selecione um Tipo</option>
+                        @foreach (var tipo in Enum.GetValues(typeof(TipoUsuario)))
+                        {
+                            <option value="@tipo">@tipo</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Usuario.TipoUsuario" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <InputText id="email" @bind-Value="Usuario.Email" class="form-control" />
+                    <ValidationMessage For="() => Usuario.Email" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="NovaSenha" class="form-label">Senha (Deixe em branco para não alterar):</label>
+                    <InputText id="NovaSenha" @bind-Value="NovaSenha" type="password" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary">Salvar</button> |
+                <a href="/usuarios" class="btn btn-outline-secondary">Retornar para lista</a>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Usuario? Usuario { get; set; }
+    private string? NovaSenha { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Usuario = await usuarioService.GetUsuarioByIdAsync(Id);
+
+        if (Usuario is null)
+        {
+            navigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task UpdateUsuario()
+    {
+        try
+        {
+            await usuarioService.AtualizarUsuarioAsync(Usuario!, NovaSenha);
+            navigationManager.NavigateTo("/usuarios");
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await usuarioService.ExisteUsuarioAsync(Usuario!.Id))
+            {
+                navigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+    }
+}

@@ -1,0 +1,44 @@
+﻿@using Blazor_Finance_Web.Services
+@using Microsoft.AspNetCore.Mvc
+@attribute [IgnoreAntiforgeryToken]
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider authStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <button class="nav-link btn btn-link" @onclick="Logout">Log out</button>
+    </Authorized>
+    <NotAuthorized>
+        <a href="Identity/Account/Register">Register</a>
+        <a href="login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string? usuarioNome;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            usuarioNome = user.Identity.Name;
+        }
+    }
+
+    private async Task Logout()
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var customAuthStateProvider = authStateProvider as CustomAuthenticationStateProvider;
+            customAuthStateProvider?.SignOut();
+        }
+
+        navigationManager.NavigateTo("/");
+    }
+}

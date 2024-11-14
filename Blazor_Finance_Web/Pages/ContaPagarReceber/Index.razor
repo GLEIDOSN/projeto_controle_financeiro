@@ -1,0 +1,44 @@
+﻿@page "/contas"
+@attribute [Authorize]
+@using Blazor_Finance_Web.Models
+@using Blazor_Finance_Web.Services.Interfaces
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject IContaService contaService
+
+<PageTitle>Lista Contas</PageTitle>
+
+<h1>Cadastro de Contas a Pagar/Receber</h1>
+
+<p>
+    <a href="contas/create" class="btn btn-primary">Nova Conta</a>
+</p>
+@if (Contas is null)
+{
+    <p><em>Carregando...</em></p>
+}
+else
+{
+    <QuickGrid Class="table table-striped" Items="Contas.AsQueryable()">
+        <PropertyColumn Property="conta => conta.Descricao" />
+        <PropertyColumn Property="conta => conta.ValorFormatado" Title="Valor" />
+        <PropertyColumn Property="conta => conta.DataVencimentoFormatado" Title="Vencimento" />
+        <PropertyColumn Property="conta => conta.Pago" />
+        <PropertyColumn Property="conta => conta.TipoFormatado" Title="Tipo" />
+
+        <TemplateColumn Title="Ações" Context="conta">
+            <a href="@($"contas/edit?id={conta.Id}")" class="btn btn-info">Editar</a> |
+            <a href="@($"contas/details?id={conta.Id}")" class="btn btn-success">Detalhes</a> |
+            <a href="@($"contas/delete?id={conta.Id}")" class="btn btn-danger">Deletar</a>
+        </TemplateColumn>
+    </QuickGrid>
+}
+
+@code {
+    private List<Conta>? Contas { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        Contas = await contaService.GetAllContasAsync();
+    }
+}
