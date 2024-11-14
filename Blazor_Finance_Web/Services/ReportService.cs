@@ -3,6 +3,7 @@ using Blazor_Finance_Web.Enums;
 using Blazor_Finance_Web.Models;
 using Blazor_Finance_Web.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Companion;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -27,24 +28,141 @@ public class ReportService : IReportService
         var contas = await ObterContasFiltradasAsync(dataInicio, dataFim, tipoConta, statusConta);
 
         // Criação do documento PDF com os dados filtrados
-        Document.Create(container =>
+        var document = Document.Create(container =>
         {
-            container
-            .Page(page =>
+            container.Page(page =>
             {
-                page.Margin(50);
+                page.Size(PageSizes.A4);
+                page.Margin(2, Unit.Centimetre);
 
-                page.Header().Element(ComposeHeader);
-                page.Content().Element(c => ComposeContent(c, contas));
+                page.Header()
+                    .Row(row =>
+                    {
+                        row.RelativeItem()
+                            .Column(column =>
+                            {
+                                column.Item()
+                                    .Text("Sistema Financeiro Web")
+                                    .FontFamily("Arial")
+                                    .FontSize(20)
+                                    .Bold();
+                                column.Item()
+                                    .Text("Rua Dodoria da Silva, 964 - Fortaleza - CE")
+                                    .FontFamily("Arial")
+                                    .FontSize(15);
+                            });
 
-                page.Footer().AlignCenter().Text(x =>
-                {
-                    x.CurrentPageNumber();
-                    x.Span(" / ");
-                    x.TotalPages();
-                });
+                        row.RelativeItem()
+                            .ShowOnce()
+                            .Text("Contas a Pagar/Receber")
+                            .AlignRight()
+                            .FontFamily("Arial")
+                            .ExtraBlack()
+                            .FontSize(20);
+                    });
+
+                page.Content()
+                    .PaddingTop(5)
+                    .Column(column =>
+                    {
+                        column.Item().Row(row =>
+                        {
+                            row.RelativeItem()
+                                .Column(column2 =>
+                                {
+                                    column2.Item()
+                                        .Text("Filtros:")
+                                        .FontSize(15)
+                                        .Bold();
+                                    column2.Item()
+                                        .Text($"{dataInicio:dd/MM/yyyy}-{dataFim:dd/MM/yyyy}-{tipoConta}-{statusConta}")
+                                        .FontFamily("Arial")
+                                        .FontSize(12);
+                                });
+
+                            row.RelativeItem()
+                                .Column(column2 =>
+                                {
+                                    column2.Item()
+                                        .Text("Data:")
+                                        .FontSize(15)
+                                        .Bold();
+                                    column2.Item()
+                                        .Text($"{DateTime.Now:dd/mm/yyyy}")
+                                        .FontFamily("Arial")
+                                        .FontSize(12);
+                                });
+
+                            column.Item().PaddingTop(10).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.ConstantColumn(40); // Id
+                                    columns.RelativeColumn();   // Descrição
+                                    columns.ConstantColumn(80); // Vencimento
+                                    columns.ConstantColumn(60); // Tipo
+                                    columns.ConstantColumn(70); // Valor
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell().Padding(4).Text("Id").Bold();
+                                    header.Cell().Padding(4).Text("Descrição").Bold();
+                                    header.Cell().Padding(4).Text("Vencimento").Bold();
+                                    header.Cell().Padding(4).Text("Tipo").Bold();
+                                    header.Cell().Padding(4).Text("Valor").AlignRight().Bold();
+
+                                    header.Cell()
+                                        .ColumnSpan(5)
+                                        .PaddingVertical(5)
+                                        .BorderBottom(1)
+                                        .BorderColor(Colors.Black);
+                                });
+
+                                for (var i = 0; i < contas.Count; i++)
+                                {
+                                    var background = i % 2 == 0 ?
+                                        Color.FromHex("#ffffff") :
+                                        Color.FromHex("#f0f0f0");
+
+                                    var conta = contas[i];
+                                    table.Cell().ShowEntire().Background(background).Padding(4).Text(conta.Id.ToString());
+                                    table.Cell().ShowEntire().Background(background).Padding(4).Text(conta.Descricao);
+                                    table.Cell().ShowEntire().Background(background).Padding(4).Text(conta.DataVencimentoFormatado);
+                                    table.Cell().ShowEntire().Background(background).Padding(4).Text(conta.TipoFormatado);
+                                    table.Cell().ShowEntire().Background(background).Padding(4).AlignRight().Text(conta.Valor.ToString("N2"));
+                                }
+
+                                table.Cell()
+                                    .ColumnSpan(5)
+                                    .PaddingVertical(5)
+                                    .BorderBottom(1)
+                                    .BorderColor(Colors.Black);
+                                table.Cell().ColumnSpan(4).Text("Total").Bold().AlignRight();
+                                table.Cell().AlignRight().Text(contas.Sum(x => x.Valor).ToString("N2")).Bold().AlignRight();
+                            });
+                        });
+                    });
+
+                page.Footer()
+                    .Column(column =>
+                    {
+                        column.Item()
+                            .PaddingVertical(10)
+                            .Text(text =>
+                            {
+                                text.Span("Page ");
+                                text.CurrentPageNumber();
+                                text.Span(" of ");
+                                text.TotalPages();
+                                text.AlignCenter();
+                            });
+                    });
             });
-        }).GeneratePdf(stream);
+        });
+
+        //document.ShowInCompanion();
+        document.GeneratePdf(stream);
 
         return stream.ToArray();
     }
@@ -78,37 +196,5 @@ public class ReportService : IReportService
         }
 
         return await query.ToListAsync();
-    }
-
-    void ComposeHeader(IContainer container)
-    {
-        var titleStyle = TextStyle.Default.FontSize(20).SemiBold().FontColor(Colors.Blue.Medium);
-
-        container.Row(row =>
-        {
-            row.RelativeItem().Column(column =>
-            {
-                column.Item().Text("Relatório de Contas a Receber").Style(titleStyle);
-                column.Item().Text(text =>
-                {
-                    text.Span("Issue date: ").SemiBold();
-                    text.Span($"{DateTime.Now:d}");
-                });
-            });
-        });
-    }
-
-    private void ComposeContent(IContainer container, List<Conta> contas)
-    {
-        container
-            .PaddingVertical(40)
-            .Background(Colors.Grey.Lighten3)
-            .Column(column =>
-            {
-                foreach (var conta in contas)
-                {
-                    column.Item().Text($"Descrição: {conta.Descricao} - Valor: {conta.Valor:C} - Status: {(conta.Pago ? "Pago" : "Não Pago")}");
-                }
-            });
     }
 }

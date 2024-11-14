@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Blazor_Finance_Web.Models;
+using Blazor_Finance_Web.Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,31 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 
 var app = builder.Build();
+
+// Configura o seeding do usuário padrão
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var usuarioService = scope.ServiceProvider.GetRequiredService<IUsuarioService>();
+
+    // Aplica as migrações para garantir que o banco está atualizado
+    await dbContext.Database.MigrateAsync();
+
+    // Verifica se há algum usuário no banco; se não, cria um usuário padrão
+    if (!await dbContext.Usuarios.AnyAsync())
+    {
+        var usuarioPadrao = new Usuario
+        {
+            Nome = "Admin",
+            TipoUsuario = TipoUsuario.Admin,
+            Email = "admin@hotmail.com",
+            Senha = "admin"
+        };
+
+        // Adiciona o usuário usando o serviço
+        await usuarioService.AddUsuarioAsync(usuarioPadrao);
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
